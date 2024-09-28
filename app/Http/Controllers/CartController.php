@@ -22,6 +22,12 @@ class CartController extends Controller
             $product_id = $request['product_id'];
         }
 
+        //check if product exists
+        $checkProduct = Product::where('id',$product_id)->first();
+        if(!$checkProduct) {
+            return back()->with(['errors' => 'Product Not Found']); 
+        }
+
         $measurement = array_map(function($value) {
             return $value ?? null;
         }, $request['measurement'] ?? []);
