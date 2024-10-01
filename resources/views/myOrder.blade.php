@@ -65,3 +65,4 @@
         @endif
     </div>
 </x-app-layout>
+@include('footer')

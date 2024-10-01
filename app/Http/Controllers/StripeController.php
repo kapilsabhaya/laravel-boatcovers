@@ -75,7 +75,7 @@ class StripeController extends Controller
                 'shipping_zipcode' => $data['data']['zipcode'],
                 'shipping_country' => $data['data']['country'],
                 'shipping_phone' => $data['data']['phone'],
-                'billing_person_name' => $data['data']['billing_first_name'] . " " . ($data['data']['billing_last_name']) ?? null,
+                'billing_person_name' => isset($data['data']['billing_first_name']) ? $data['data']['billing_first_name'] . " " . ($data['data']['billing_last_name']) : null,
                 'billing_address' => $data['data']['billing_address'] ?? null,
                 'billing_city' => $data['data']['billing_city'] ?? null,
                 'billing_state' => $data['data']['billing_state'] ?? null,

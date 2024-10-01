@@ -114,7 +114,7 @@
         </div>
         @else
         <center>
-            <h4>Cart is empty !</h4><br>
+            <h4 class>Cart is empty !</h4><br>
             <a class="btn" href="{{route('dashboard')}}"><button>Continue Shopping <i
                         class="bi bi-arrow-right"></i></button></a>
         </center>
@@ -211,7 +211,10 @@
                     success: function(response) {
                         if(response.status == false){
                             alert("Something Went Wrong !Please Try Again.")
-                        } else {
+                        } else if(response.error) {
+                            alert(response.error);
+                        }
+                        else {
                             var totalPrice = originalPrice * qty;
                             $priceElement.text("$" + totalPrice.toFixed(2))
                             subtotal();
@@ -225,3 +228,4 @@
     </script>
     @endpush
 </x-app-layout>
+@include('footer')

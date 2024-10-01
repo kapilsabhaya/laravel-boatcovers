@@ -1,9 +1,16 @@
 <x-app-layout>
-	
-	@if(session('errors'))
-    <div class="alert alert-danger"> {{session('errors')}} </div>
-    @endif
 
+	@if($errors->any())
+	<center><div class="alert alert-danger ms-5 w-50 mt-5" > 
+			{{ $errors->first() }} 
+	</div></center>
+	@endif
+
+	{{-- @if(session('errors'))
+    <div class="alert alert-danger"> {{session('errors')}} </div>
+    @endif --}}
+
+	@if(isset($products) && $products->isNotEmpty())
     <div class="container" style="width:82%;margin-top:20px;">
         <img src="{{ asset('uploads/Category/50.jpg') }}" alt="50%off" />
         <br>
@@ -89,8 +96,8 @@
         </div>
         @endforeach
     </div>
+	@endif
 
-	@include('footer')
 
     @push('script')
     <script>
@@ -163,3 +170,4 @@
     </script>
     @endpush
 </x-app-layout>
+@include('footer')

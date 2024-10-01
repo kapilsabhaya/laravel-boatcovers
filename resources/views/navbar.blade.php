@@ -9,7 +9,7 @@ $master = App\Models\MasterCategory::where('status',true)->get();
         <div class="container-navbar p-3 d-flex flex-wrap">
             <!-- nav-left -->
             <div class="navbar-left col-md-2">
-                <a route="{{route('dashboard')}}"><img  src="{{ asset('resource/logo.png') }}" class="brand-logo" /></a>
+                <a href="{{ route('dashboard') }}"><img  src="{{ asset('resource/logo.png') }}" class="brand-logo" /></a>
             </div>
             <!-- nav-middle -->
             <div class="navbar-mid col-md-6 text-start">
@@ -91,8 +91,7 @@ $master = App\Models\MasterCategory::where('status',true)->get();
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-    crossorigin="anonymous"></script>
+
 <script>
     $(document).ready(function () {
         $('.master-category').mouseenter(function(){

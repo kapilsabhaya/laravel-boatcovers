@@ -85,11 +85,10 @@ class PayPalController extends Controller
                 if(!$request->hasCookie('guest_id')) {
                     Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
                 } else {
-                    $addGuest = $guestUser;
                     Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
                 }
             } else {
-                $addGuest = GuestUser::find($request->cookie('guest_id'));
+                    $addGuest = $guestUser;
                 Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
             }
         } 
@@ -113,7 +112,7 @@ class PayPalController extends Controller
             'shipping_zipcode' => $data['data']['zipcode'],
             'shipping_country' => $data['data']['country'],
             'shipping_phone' => $data['data']['phone'],
-            'billing_person_name' => $data['data']['billing_first_name'] . " " . ($data['data']['billing_last_name']) ?? null,
+            'billing_person_name' => isset($data['data']['billing_first_name']) ? $data['data']['billing_first_name'] . " " . ($data['data']['billing_last_name']) : null,
             'billing_address' => $data['data']['billing_address'] ?? null,
             'billing_city' => $data['data']['billing_city'] ?? null,
             'billing_state' => $data['data']['billing_state'] ?? null,

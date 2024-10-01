@@ -63,7 +63,7 @@ Route::middleware(['auth:admin','verified'])->group(function()
 });
 
 Route::middleware('user')->group(function () {
-    Route::get('/', function () { return view('dashboard'); })->name('dashboard');
+    Route::get('/' ,[HomeController::class,'index'])->name('dashboard');
     Route::get('getSubCategory/{id}',[NavbarController::class,'getSubCategory'])->name('getSubCategory');
     Route::prefix('pages')->get('/{slug}',[HomeController::class,'handleSlug'])->name('handleSlug');
     Route::get('getYear/{id}' ,[HomeController::class,'getYear'])->name('getYear');

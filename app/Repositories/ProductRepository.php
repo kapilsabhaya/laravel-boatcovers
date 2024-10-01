@@ -69,7 +69,7 @@ class ProductRepository
                     $optionSortOrder = $data['option_sort_order'];
 
                     for ($i = 0; $i < count($optVal); $i++) {
-                        $productOptionValue = ProductOptionValue::creeate([
+                        $productOptionValue = ProductOptionValue::create([
                             'option_value_id' => $optVal[$i],
                             'product_id' => $product->id,
                             'base_price' => $basePrice[$i],

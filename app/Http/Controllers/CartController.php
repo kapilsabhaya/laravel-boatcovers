@@ -31,44 +31,57 @@ class CartController extends Controller
         $measurement = array_map(function($value) {
             return $value ?? null;
         }, $request['measurement'] ?? []);
+        
         $hasOption = false;
         if(isset($request['color']) || isset($request['size']) || isset($request['fabric']) || isset($request['tiedown']) || isset($request['grommet']) || isset($request['measurement'])) {
             $hasOption = true;
         }
 
         if($hasOption) {
-            $checkOptionValue = OptionValue::where('id',$request['color'])
-            ->orWhere('id' ,$request['size'])
-            ->orWhere('id' ,$request['fabric'])
-            ->orWhere('id' ,$request['tiedown'])
-            ->orWhere('id' ,$request['grommet'])
-            ->orWhere('id' ,array_key_first($request['measurement']['Height']))
-            ->orWhere('id' ,array_key_first($request['measurement']['Width']))
-            ->orWhere('id' ,array_key_first($request['measurement']['Depth']))
-            ->orWhere('id' ,array_key_first($request['measurement']['Front Height']))
-            ->get();
-
-            if(!$checkOptionValue->isNotEmpty()){
-                return back()->with(['errors' => 'Option Value Mismatch']); 
+            if($request['color']) {
+                $checkColor = OptionValue::where('id', $request['color'])->first();
+                $checkProductOptionValue = ProductOptionValue::where('product_id',$product_id)->where('option_value_id',$request['color'])->first();
+                if(!$checkColor || !$checkProductOptionValue) {
+                    return back()->withErrors('Option Value Mismatch'); 
+                }
             } 
-        }
-
-        if($hasOption) {
-            $checkProductOptionValue = ProductOptionValue::where('product_id',$product_id)
-            ->where('option_value_id',$request['color'])
-            ->orWhere('option_value_id',$request['size'])
-            ->orWhere('option_value_id',$request['fabric'])
-            ->orWhere('option_value_id',$request['tiedown'])
-            ->orWhere('option_value_id',$request['grommet'])
-            ->get();
-
-            if(!$checkProductOptionValue->isNotEmpty()){
-                return back()->with(['errors' => 'Product Option Value Mismatch']);
+            if($request['size']) {
+                $checkSize = OptionValue::where('id', $request['size'])->first();
+                $checkProductOptionValue = ProductOptionValue::where('product_id',$product_id)->where('option_value_id',$request['size'])->first();
+                if(!$checkSize || !$checkProductOptionValue) {
+                    return back()->withErrors('Option Value Mismatch');
+                }
+            }
+            if($request['fabric']) {
+                $checkFabric = OptionValue::where('id', $request['fabric'])->first();
+                $checkProductOptionValue = ProductOptionValue::where('product_id',$product_id)->where('option_value_id',$request['fabric'])->first();
+                if(!$checkFabric || !$checkProductOptionValue) {
+                    return back()->withErrors('Option Value Mismatch');
+                }
+            }
+            if($request['tiedown']) {
+                $checkTiedown = OptionValue::where('id', $request['tiedown'])->first();
+                $checkProductOptionValue = ProductOptionValue::where('product_id',$product_id)->where('option_value_id',$request['tiedown'])->first();
+                if(!$checkTiedown || !$checkProductOptionValue) {
+                    return back()->withErrors('Option Value Mismatch');
+                }
+            }
+            if($request['grommet']) {
+                $checkGrommet = OptionValue::where('id', $request['grommet'])->first();
+                $checkProductOptionValue = ProductOptionValue::where('product_id',$product_id)->where('option_value_id',$request['grommet'])->first();
+                if(!$checkGrommet || !$checkProductOptionValue) {
+                    return back()->withErrors('Option Value Mismatch');
+                }
+            }
+            if($measurement) {
+                $checkMeasurement = OptionValue::where('id',array_key_first($request['measurement']['Height']))->where('id',array_key_first($request['measurement']['Width']))->where('id',array_key_first($request['measurement']['Depth']))->where('id',array_key_first($request['measurement']['Front Height']))->get();
+                if(!$checkMeasurement) {
+                    return back()->withErrors('Option Value Mismatch');
+                }
             }
         }
 
-       
-
+      
         DB::beginTransaction();
         $session_id = session()->getId();
 
@@ -185,6 +198,11 @@ class CartController extends Controller
 
     public function updateCart(Request $request) {
         if($request->product_id && $request->product_id != null) {
+
+            $checkProduct = Product::where('id' ,$request->product_id)->first();
+            if(!$checkProduct) {
+                return response()->json(['error' => 'Product not found'], 404);
+            }
             $product_id = $request->input('product_id');
             $quantity = $request->input('quantity');
             $session_id = $request->cookie('session_id');

@@ -11,6 +11,10 @@ class HomeService
     ) {
     }
 
+    public function index() {
+        return $this->home->index();
+    }
+    
     public function handleSlug(array $data,$slug) {
         return $this->home->handleSlug($data,$slug);
     }

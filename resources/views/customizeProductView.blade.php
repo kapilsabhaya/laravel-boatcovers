@@ -86,7 +86,7 @@
                     @endif
                 @endforeach
 
-                <form action="{{route('addToCart')}}" method="get">
+                <form id="addProduct" action="{{route('addToCart')}}" method="get">
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                 <!-- Display Measurements Grouped Together -->
                 @if (count($measurements) > 0)
@@ -215,7 +215,7 @@
 
     <script>
     
-    $(document).ready(function () {
+$(document).ready(function () {
         document.querySelectorAll('.thumbnail img').forEach(function(thumbnail) {
             thumbnail.addEventListener('click', function() {
             // Get the large image URL from the data attribute
@@ -225,12 +225,35 @@
             });
         });
 
-        function updatePrice() {
-            var qty = parseInt($('.product-qty').val());
-            if (isNaN(qty) || qty < 1) {
-                qty = 1; 
+        function validate() {
+            var height = $('input[type=number][name^="measurement[Height]"]').val();
+            var width = $('input[type=number][name^="measurement[Width]"]').val();
+            var depth = $('input[type=number][name^="measurement[Depth]"]').val();
+            
+            if(height < 1){
+                $('input[type=number][name^="measurement[Height]"]').addClass('is-invalid').after('<small class="text-danger">Value must be at least 1</small>');
+                return;
+            } else {
+                $('input[type=number][name^="measurement[Height]"]').removeClass('is-invalid').next('small.text-danger').remove();
+            }
+
+            if(width < 1) {
+                $('input[type=number][name^="measurement[Width]"]').addClass('is-invalid').after('<small class="text-danger">Value must be at least 1</small>');
+                return;
+            } else {
+                $('input[type=number][name^="measurement[Width]"]').removeClass('is-invalid').next('small.text-danger').remove();
+            }
+
+            if(depth < 1) {
+                $('input[type=number][name^="measurement[Depth]"]').addClass('is-invalid').after('<small class="text-danger">Value must be at least 1</small>');
+                return;
+            } else {
+                $('input[type=number][name^="measurement[Depth]"]').removeClass('is-invalid').next('small.text-danger').remove();
             }
             
+        }
+        function updatePrice() {
+            validate();
             var fabric = $('input[type=radio][name="fabric"]:checked').val();
             var tiedown = $('input[type=radio][name="tiedown"]:checked').val(); 
             var grommet = $('input[type=radio][name="grommet"]:checked').val();
@@ -241,23 +264,10 @@
             var depth = $('input[type=number][name^="measurement[Depth]"]').val();
             var depthId = $('input[type=number][name^="measurement[Depth]"]').data('measurement');
             var productId = "{{$product->id}}";
-            
-            if(height < 1){
-                $('input[type=number][name="measurement[Height]"]').addClass('is-invalid').after('<small class="text-danger">Value must be at least 1</small>');
-            } else {
-                $('input[type=number][name="measurement[Height]"]').removeClass('is-invalid').next('small.text-danger').remove();
-            }
 
-            if(width < 1) {
-                $('input[type=number][name="measurement[Width]"]').addClass('is-invalid').after('<small class="text-danger">Value must be at least 1</small>');
-            } else {
-                $('input[type=number][name="measurement[Width]"]').removeClass('is-invalid').next('small.text-danger').remove();
-            }
-
-            if(depth < 1) {
-                $('input[type=number][name="measurement[Depth]"]').addClass('is-invalid').after('<small class="text-danger">Value must be at least 1</small>');
-            } else {
-                $('input[type=number][name="measurement[Depth]"]').removeClass('is-invalid').next('small.text-danger').remove();
+            var qty = parseInt($('.product-qty').val());
+            if (isNaN(qty) || qty < 1) {
+                qty = 1; 
             }
             
             $.ajaxSetup({
@@ -280,9 +290,14 @@
                 },
                 dataType: "json",
                 success: function (response) {
-                    originalPrice = response.price_increment;
-                    var finalPrice = originalPrice * qty;
-                    $(".priceText h3").text("$" + finalPrice);
+                    if(response.price_increment) {
+                        originalPrice = response.price_increment;
+                        var finalPrice = originalPrice * qty;
+                        $(".priceText h3").text("$" + finalPrice);
+                    } else if(response.errors){
+                        alert(response.errors);
+                        window.location.reload();
+                    }
                 }
             });
         }
@@ -307,11 +322,18 @@
         });
 
         // Initialize price on page load
+        validate();
         updatePrice();
+
+        $(document).on('submit' , '#addProduct' , function(e) {
+            e.preventDefault();
+            validate();
+        });
 });
+
     </script>
 
-    <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+    <script src="{{asset('assets/extensions/filepond/filepond.min.js')}}"></script>
     <script
         src="{{ asset('assets/extensions/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}">
     </script>

@@ -1,6 +1,7 @@
 <x-app-layout>
     @push('script')
     <script src="https://js.braintreegateway.com/web/dropin/1.24.0/js/dropin.min.js"></script>
+    {{-- <script src="{{asset('assets/compiled/js/braintree.dropin.min.js')}}"></script> --}}
     @endpush
 
     <div class="py-12">

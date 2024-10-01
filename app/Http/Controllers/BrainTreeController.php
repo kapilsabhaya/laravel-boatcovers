@@ -41,24 +41,23 @@ class BrainTreeController extends Controller
         DB::beginTransaction();
         $nonce = $request->input('nonce');
         $data = $request->input('data.data');
-        
+
         //check if customer already exists
         if(!Auth::check()){
             $addGuest=null;
-            $guestUser = GuestUser::where('email',$data['data']['email'])->first();
+            $guestUser = GuestUser::where('email',$data['email'])->first();
             if(!$guestUser) {
                 $addGuest = GuestUser::create([
-                    'name' => $data['data']['fname'] . " " . $data['data']['lname'],
-                    'email' =>$data['data']['email']
+                    'name' => $data['fname'] . " " . $data['lname'],
+                    'email' =>$data['email']
                 ]);
             if(!$request->hasCookie('guest_id')) {
                 Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
             } else {
-                $addGuest = $guestUser;
                 Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
             }
             } else {
-                $addGuest = GuestUser::find($request->cookie('guest_id'));
+                $addGuest = $guestUser;
                 Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
             }
         }
@@ -90,7 +89,7 @@ class BrainTreeController extends Controller
                 'shipping_zipcode' => $data['zipcode'],
                 'shipping_country' => $data['country'],
                 'shipping_phone' => $data['phone'],
-                'billing_person_name' => $data['data']['billing_first_name'] . " " . ($data['data']['billing_last_name']) ?? null,
+                'billing_person_name' => isset($data['billing_first_name']) ? $data['billing_first_name'] . " " . ($data['billing_last_name']) : null,
                 'billing_address' => $data['billing_address'] ?? null,
                 'billing_city' => $data['billing_city'] ?? null,
                 'billing_state' => $data['billing_state'] ?? null,
