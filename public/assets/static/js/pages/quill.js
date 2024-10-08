@@ -50,7 +50,17 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // On form submit, set the hidden input value to the Quill content
-  document.getElementById("addPro").onsubmit = function() {
-      document.getElementById("hiddenDesc").value = quill.root.innerHTML;
-  };
+  const addProductForm =  document.getElementById("addPro");
+  if(addProductForm) {
+      document.getElementById("addPro").onsubmit = function() {
+          document.getElementById("hiddenDesc").value = quill.root.innerHTML;
+      };
+  }
+
+  const updateProductForm = document.getElementById("updateProductForm");
+  if(updateProductForm) {
+      document.getElementById("updateProductForm").onsubmit = function() {
+          document.getElementById("hiddenDesc").value = quill.root.innerHTML;
+      };
+  }
 });

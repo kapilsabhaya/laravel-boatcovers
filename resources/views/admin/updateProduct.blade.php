@@ -8,6 +8,23 @@
         href="{{ asset('assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/extensions/filepond/filepond.css') }}">
 
+    <style>
+        .updateProduct .updateProductImg button{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            opacity:0.6;
+            background-color: grey;
+            height:40%;
+            width:40%;
+            border-radius:2px;
+        }
+        .updateProduct .updateProductImg button:hover{
+            color:white;
+        }
+    </style>
     <section class="section">
         <div class="card">
 
@@ -24,11 +41,19 @@
 
             <div class="card-body">
                 @foreach ($product as $item)
-
-                <form class="updateProduct" id='addPro' method="post">
+                <form class="updateProduct" id='updateProductForm' method="post">
                     @csrf
                     @method('PATCH')
                     <input type="hidden" class="productId" value="{{ $item->id }}">
+                    
+                    <div class="updateProductImg">
+                        @foreach ($item->media as $media)
+                            <div style="position: relative; display: inline-block;">
+                                <img src="{{ asset('uploads/Product/'.$media->media) }}" alt="{{$item->name}}" style="margin:1px; height:90px; width:90px;">
+                                <button class="deleteImg" type="button" data-img-id="{{$media->id}}" ><i class="bi bi-trash3-fill"></i></button>
+                            </div>
+                        @endforeach
+                    </div>
                     <label for="">Image</label>
                     <input type="file" name="image[]" multiple class="image-preview-filepond">
                     <br>
@@ -44,8 +69,8 @@
                             <select required name="category" class="form-control">
                                 @if ($category && $category->isNotEmpty())
                                 @foreach ($category as $key => $cat)
-                                <option @if($cat->id == $item->category_id) selected @endif value="{{ $cat->id }}">{{
-                                    $cat->category_name }}</option>
+                                <option @if($cat->id == $item->category_id) selected @endif value="{{ $cat->id }}">
+                                    {{ $cat->category_name }} @if($cat->sub_category_name != null) {{"(" . $cat->sub_category_name . ")" }} @endif</option>
                                 @endforeach
                                 @else
                                 <option selected disabled value="">No Master Category Available</option>
@@ -56,23 +81,22 @@
 
 
                     <label for="" class="form-label">Description</label>
-                    <div id="full">
-                        {!! $item->description!!}   
-                    </div>
+                    <div id="full"> {!! $item->description !!}</div>
                     <input type="hidden" name="desc" id="hiddenDesc">
                     <p id="descError"></p>
                     <br>
+
                     <div class="row">
                         <div class="col-4">
                             <label for="">Price($)</label>
                             <input value="{{ $item->price }}" autocomplete="off" type="number" id="" name="price"
-                                class="prc form-control round" step="0.01" placeholder="Price" min="100">
+                                class="prc form-control round" step="0.01" placeholder="Price" >
                             <p id="priceError"></p>
                         </div>
                         <div class="col-4">
                             <label for="">Quantity</label>
                             <input value="{{ $item->quantity }}" autocomplete="off" type="number" name="qty"
-                                class="qty form-control round" placeholder="Quantity" min="1">
+                                class="qty form-control round" placeholder="Quantity" >
                             <p id="qtyError"></p>
                         </div>
                         <div class="col-4">
@@ -123,12 +147,104 @@
                         </div>
                     </div>
 
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            Options
+                        </h5>
+                    </div>
+                    {{-- OPTIONS --}}
+                    @foreach($item->productOption as $options)
+                    <div class="optionValue">
+                        <br>
+                        <div class="row">
+                            <div class="col-3">
+                                <label for="">Option Name</label>
+                                <select name="option[]" class="option form-control">
+                                    @if ($option->isNotEmpty())
+                                        <option selected disabled>Select Option</option>
+                                        @foreach ($option as $opt)
+                                            <option @if($options->optionValue->option_id == $opt->id) selected @endif value="{{$opt->id}}">{{ $opt->option_name }}</option>
+                                        @endforeach
+                                    @else
+                                        <option selected disabled>No Option Available</option>
+                                    @endif
+                                </select>
+                                <p id="optionError"></p>
+                            </div>
+                            <div class="col-3">
+                                <label for="">Option Value</label>
+                                <select name="optVal[]" class="optionValDropDown form-control">
+                                    <option selected value="{{$options->optionValue->id}}">{{ $options->optionValue->option_value}}</option>
+                                </select>
+                                <p id="optValError"></p>
+                            </div>
+                            <div class="col-6">
+                                <label for="">Base Price</label>
+                                <input type="number" id="bprice" autocomplete="off" name="base_price[]"
+                                step="0.01" value="{{ $options->base_price }}" class="form-control round" placeholder="Base Price">
+                                <p id="bpriceError"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="">Price Increment</label>&nbsp;&nbsp;<small><i>can skip</i></small>
+                                <input type="number" autocomplete="off" id="pinc" name="price_increment[]"
+                                    class="form-control round" value="{{ $options->price_increment }}" placeholder="In (%)" min="0">
+                                <p id="priceIncrementError"></p>
+                            </div>
+                            <div class="col-6">
+                                <label for="">Option Sort Order</label>
+                                <input autocomplete="off" type="number" name="option_sort_order[]" id="option_sort_ord"
+                                    class="form-control round" value="{{ $options->sort_order }}" placeholder="Sort Order" min="0">
+                                <p id="osort_orderError"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="removeOption btn btn-danger float-right">Remove</button>
+                    @endforeach
+                    <button type="button" class="btn btn-primary add-option-btn">Add Option</button>
+                    <div class="optionContainer"></div> 
+                    {{-- OPTIONS --}}
+
+                    {{-- SETTINGS --}}
+                    <hr>
+                    <br>
+                    <div class="card-header">
+                        <h5 class="card-title">
+                             Settings
+                        </h5>
+                    </div>
+                        @foreach ($item->setting as $setting)
+                        <div class="setting">
+                            <br>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label for="">Setting Name</label>
+                                    <input type="text" class="form-control" id="sname" placeholder="Ex. Shipping"
+                                        value="{{ $setting->setting_name }}" autocomplete="off" name="setting_name[]" id="setting_name">
+                                    <p id="setNameError"></p>
+                                </div>
+                                <div class="col-6">
+                                    <label for="">Value</label>
+                                    <input type="text" id="svalue" class="form-control" placeholder="Free/12.7"
+                                    value="{{ $setting->value }}"  autocomplete="off" name="setting_value[]">
+                                    <p id="setValError"></p>
+                                </div>
+                                <input type="hidden" name="setting_id[]" value="{{$setting->id}}">
+                            </div>
+                        </div>
+                    <button class="removeSetting btn btn-danger float-right">Remove</button>
+                        @endforeach
+                    <button type="button" class="btn btn-primary add-setting-btn">Add Setting</button>
+                    <div class="settingContainer"></div>
+                    {{-- SETTINGS --}}
 
                     <button type="submit" class="btn btn-primary" style="margin-left:80%">
                         <i class="bx bx-check d-block d-sm-none"></i>
                         <span class="d-none d-sm-block">Update Product</span>
                     </button>
                 </form>
+                <input type="hidden" form="updateProductForm" name="product_id" value="{{$item->id}}">
                 @endforeach
             </div>
         </div>
@@ -174,33 +290,237 @@
             });
         });
 
-        //option option val script
-        // $(".option").change(function() {
-        //     var option = $(this).val();
-        //     $.ajaxSetup({
-        //             headers: {
-        //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        //                 }
-        //     });
-        //     $.ajax({
-        //     type: "POST",
-        //     url: "{{ route('getOptionValue',':id') }}".replace(':id',option),
-        //     dataType: "json",
-        //     success: function (response) {
-        //         var dropdown = $('#optionValDropDown');
-        //         dropdown.empty();
-        //         if(response.optVal.length === 0) {
-        //             dropdown.append('<option selected  disabled>No Option Value</option>');
-        //         } else {
-        //             response.optVal.forEach(function(item) {
-        //             var option = $('<option></option>').attr('value', item.option_val_id).text(item.option_value);
-        //             dropdown.append(option);
-        //             });
-        //         }
-        //     }
-        //     });
-        // });
+        //===========clone option script
+        const optionContainer = document.querySelector('.optionContainer');
+        const originalOption = document.querySelector('.optionValue');
+        const addOptionButton = document.querySelector('.add-option-btn');
 
+        //create a template foe option div
+        // const optionTemplate = `
+        //     <div class="optionValue">
+        //         <br>
+        //         <div class="row">
+        //             <div class="col-3">
+        //                 <label for="">Option Name</label>
+        //                 <select name="option[]" class="option form-control">
+        //                     @if ($option->isNotEmpty())
+        //                         <option selected disabled>Select Option</option>
+        //                         @foreach ($option as $item)
+        //                             <option value="{{$item->id}}">{{ $item->option_name }}</option>
+        //                         @endforeach
+        //                     @else
+        //                         <option selected disabled>No Option Value Available</option>
+        //                     @endif
+        //                 </select>
+        //                 <p id="optionError"></p>
+        //             </div>
+        //             <div class="col-3">
+        //                 <label for="">Option Value</label>
+        //                 <select name="optVal[]" class="optionValDropDown form-control"></select>
+        //                 <p id="optValError"></p>
+        //             </div>
+        //             <div class="col-6">
+        //                 <label for="">Base Price</label>
+        //                 <input type="number" id="bprice" autocomplete="off" name="base_price[]"
+        //                 step="0.01" class="form-control round" placeholder="Base Price">
+        //                 <p id="bpriceError"></p>
+        //             </div>
+        //         </div>
+        //         <div class="row">
+        //             <div class="col-6">
+        //                 <label for="">Price Increment</label>&nbsp;&nbsp;<small><i>can skip</i></small>
+        //                 <input type="number" autocomplete="off" id="pinc" name="price_increment[]"
+        //                     class="form-control round" placeholder="In (%)" min="0">
+        //                 <p id="priceIncrementError"></p>
+        //             </div>
+        //             <div class="col-6">
+        //                 <label for="">Option Sort Order</label>
+        //                 <input autocomplete="off" type="number" name="option_sort_order[]" id="option_sort_ord"
+        //                     class=" form-control round" placeholder="Sort Order" min="0">
+        //                 <p id="osort_orderError"></p>
+        //             </div>
+        //         </div>
+        //     </div>
+        // `;
+        const optionTemplate = `
+            <div class="optionValue">
+                <br>
+                <div class="row">
+                    <div class="col-3">
+                        <label for="">Option Name</label>
+                        <select name="option[]" class="option form-control">
+                            <option selected disabled>Select Option</option>
+                        </select>
+                        <p id="optionError"></p>
+                    </div>
+                    <div class="col-3">
+                        <label for="">Option Value</label>
+                        <select name="optVal[]" class="optionValDropDown form-control">
+                        </select>
+                        <p id="optValError"></p>
+                    </div>
+                    <div class="col-6">
+                        <label for="">Base Price</label>
+                        <input type="number" id="bprice" autocomplete="off" name="base_price[]"
+                        step="0.01" class="form-control round" placeholder="Base Price">
+                        <p id="bpriceError"></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <label for="">Price Increment</label>&nbsp;&nbsp;<small><i>can skip</i></small>
+                        <input type="number" autocomplete="off" id="pinc" name="price_increment[]"
+                            class="form-control round" placeholder="In (%)" min="0">
+                        <p id="priceIncrementError"></p>
+                    </div>
+                    <div class="col-6">
+                        <label for="">Option Sort Order</label>
+                        <input autocomplete="off" type="number" name="option_sort_order[]" id="option_sort_ord"
+                            class=" form-control round" placeholder="Sort Order" min="0">
+                        <p id="osort_orderError"></p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        function createNewOption() {
+            let newOptionRow;
+            if(originalOption) {
+                newOptionRow = originalOption.cloneNode(true);
+            } else {
+                newOptionRow = document.createElement('div');
+                newOptionRow.innerHTML = optionTemplate;
+            }
+
+            const optionSelect = newOptionRow.querySelector('.option');
+            const options = {!! $option !!}; 
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.id;
+                optionElement.textContent = option.option_name;
+                optionSelect.appendChild(optionElement);
+            });
+            var dropdown = $(optionSelect).closest('.optionValue').find('.optionValDropDown');
+            dropdown.empty();
+
+            newOptionRow.querySelectorAll('input').forEach((element) => {
+                element.value = '';
+            });
+
+            newOptionRow.querySelectorAll('p[id$="Error"]').forEach((element) => {
+                element.remove();
+            });
+            const removeOption = document.createElement('button');
+            removeOption.textContent = 'Remove';
+            removeOption.classList.add('btn', 'btn-danger','float-right');
+            newOptionRow.appendChild(removeOption);
+
+            removeOption.addEventListener('click', () => {
+                newOptionRow.remove();
+            });
+            optionContainer.appendChild(newOptionRow);
+        }
+        addOptionButton.addEventListener('click', createNewOption);
+        
+        //=================clone setting script
+        const settingContainer = document.querySelector('.settingContainer');
+        const originalSetting = document.querySelector('.setting');
+        const addSettingButton = document.querySelector('.add-setting-btn');
+
+        // Create a template for the setting div
+        const settingTemplate = `
+            <div class="setting">
+                <br>
+                <div class="row">
+                    <div class="col-6">
+                        <label for="">Setting Name</label>
+                        <input type="text" class="form-control" id="sname" placeholder="Ex. Shipping" name="setting_name[]" autocomplete="off">
+                        <p id="setNameError"></p>
+                    </div>
+                    <div class="col-6">
+                        <label for="">Value</label>
+                        <input type="text" id="svalue" class="form-control" placeholder="Free/12.7" name="setting_value[]" autocomplete="off">
+                        <p id="setValError"></p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        function createNewSetting() {
+            let newSettingRow;
+            if (originalSetting) {
+                newSettingRow = originalSetting.cloneNode(true);
+            } else {
+                newSettingRow = document.createElement('div');
+                newSettingRow.innerHTML = settingTemplate;
+            }
+
+            newSettingRow.querySelectorAll('input').forEach((element) => {
+                element.value = '';
+            });
+
+            newSettingRow.querySelectorAll('p[id$="Error"]').forEach((element) => {
+                element.remove();
+            });
+            const removeSetting = document.createElement('button');
+            removeSetting.textContent = 'Remove';
+            removeSetting.classList.add('btn', 'btn-danger','float-right');
+            newSettingRow.appendChild(removeSetting);
+
+            removeSetting.addEventListener('click', () => {
+                newSettingRow.remove();
+            });
+            settingContainer.appendChild(newSettingRow);
+        }
+        addSettingButton.addEventListener('click', createNewSetting);
+        
+        $('.removeOption').click(function (e) { 
+            e.preventDefault();
+            const removeBtn = $(this);
+            const optionContainer = removeBtn.prev('.optionValue');
+            optionContainer.remove();
+            removeBtn.remove();
+        });
+
+        $('.removeSetting').click(function (e) { 
+            e.preventDefault();
+            const removeBtn = $(this);
+            const settingContainer = removeBtn.prev('.setting');
+            settingContainer.remove();
+            removeBtn.remove();
+        });
+
+        //get option values
+        $(document).on('click', '.option', function() {
+            var option = $(this).val();
+            var optContainer = $(this);
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                type: "POST",
+                url: "{{ route('getOptionValue',':id') }}".replace(':id',option),
+                dataType: "json",
+                success: function (response) {
+                    var dropdown = optContainer.closest('.optionValue').find('.optionValDropDown');
+                    var selectedOption = dropdown.find('option:selected').val();
+                    dropdown.empty();
+                    if(response.optVal.length === 0) {
+                        dropdown.append('<option selected  disabled>No Option Value</option>');
+                    } else {
+                        response.optVal.forEach(function(item) {
+                        var option="<option value=' " + item.option_val_id +"'>  " + item.option_value +" </option>";
+                        if(item.option_val_id == selectedOption) {
+                            option = "<option value='" + item.option_val_id + "' selected>" + item.option_value + "</option>";
+                        }
+                        dropdown.append(option);
+                        });
+                    }
+                }
+            });
+        });
        
         //update product script
         $(document).on('submit' , '.updateProduct' , function (event) {
@@ -333,6 +653,9 @@
                         } else {
                             $('#set_pinc').removeClass('is-invalid').next('#set_priceIncrementError').removeClass('invalid-feedback').html(errors.set_price_increment).hide();
                         }
+                        if(!is_array(errors)) {
+                            alert(errors);
+                        }
                     } else if(response.status == 500) {
                         const showToast = (options) => {
                             Toastify(options).showToast();
@@ -348,6 +671,32 @@
                     }
                 }
             }); 
+        });
+
+        //delete Image
+        $(".deleteImg").click(function() {
+           var imgId = $(this).data('img-id');
+           var productId = $(".productId").val();
+           var imgElement = $(this).parent();
+
+           $.ajaxSetup({
+                headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    }
+            });
+            $.ajax({
+                type: "post",
+                url: "{{route('deleteImg')}}",
+                data: { imgId : imgId, productId:productId },
+                dataType: "json",
+                success: function (response) {
+                    if(response.status === 500) {
+                        alert(response.error);
+                    } else {
+                     imgElement.remove();
+                    }
+                }
+            });
         });
     </script>
     @endpush

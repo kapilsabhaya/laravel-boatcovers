@@ -1,8 +1,14 @@
 <x-admin-layout>
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
+
     @push('title')
     <title>Manage Option</title>
     @endpush
 
+    @if($option != null)
     @push('heading')
     Manage Option
     @endpush
@@ -17,7 +23,7 @@
                     </h5>
                 </div>
                 <div class="ms-auto pe-5">
-                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOption">Add
+                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" @if($adminRole->hasPermissionTo('create-option')) data-bs-target="#addOption" @else onclick="alert('Permission Denied'); return false;" @endif>Add
                         new</a>
                 </div>
             </div>
@@ -49,13 +55,13 @@
                                     <button type="button" data-bs-toggle="tooltip" data-bs-placement="left"
                                         title="Edit">
                                         <a class="btn icon btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editOption-{{ $item->id }}"><i
+                                            @if($adminRole->hasPermissionTo('update-option')) data-bs-target="#editOption-{{ $item->id }}" @else onclick="alert('Permission Denied'); return false;" @endif><i
                                                 class="bi bi-pencil"></i></a>
                                     </button>
 
                                     <button style="padding-left:2%" data-bs-toggle="tooltip" data-bs-placement="top"
                                         title="See Values" value="1">
-                                        <a href="{{ route('option.show', $item->id )}}" class="btn icon btn-success"><i
+                                        <a @if($adminRole->hasPermissionTo('view-option-value')) href="{{ route('option.show', $item->id )}}" @else onclick="alert('Permission Denied'); return false;" @endif class="btn icon btn-success"><i
                                                 class="bi bi-info-circle"></i></a>
                                     </button>
 
@@ -162,7 +168,9 @@
         @endpush
 
     </section>
-
+    @else
+    <div class="alert alert-danger"> {{$error}} </div>
+    @endif
     @push('script')
     <script>
         $(document).on('submit' , '.addOption' , function (event) {
@@ -200,7 +208,10 @@
                         if(errors['option']){
                             $('.option').addClass('is-invalid').next('#optionError').addClass('invalid-feedback').html(errors.option).show();
                         }
-                    }
+                        if(!is_array(errors)) {
+                            alert(errors);
+                        }
+                    } 
                 }
             }); 
         });
@@ -233,6 +244,8 @@
                         var errors = response.errors;
                         if(errors['option']){
                             $('.uoption').addClass('is-invalid').next('#option_error').addClass('invalid-feedback').html(errors.option).show();
+                        } if(!is_array(errors)) {
+                            alert(errors);
                         }
                     }
                 }

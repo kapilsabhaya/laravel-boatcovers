@@ -326,7 +326,6 @@ $(document).ready(function () {
         updatePrice();
 
         $(document).on('submit' , '#addProduct' , function(e) {
-            e.preventDefault();
             validate();
         });
 });

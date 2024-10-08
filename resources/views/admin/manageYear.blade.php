@@ -1,8 +1,13 @@
 <x-admin-layout>
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
     @push('title')
     <title>Manage Year</title>
     @endpush
 
+    @if($year!= null)
     @push('heading')
     Manage Year
     @endpush
@@ -15,7 +20,7 @@
                     </h5>
                 </div>
                 <div class="ms-auto pe-5">
-                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" data-bs-target="#addYear">Add
+                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" @if($adminRole->hasPermissionTo('create-year')) data-bs-target="#addYear" @else onclick="alert('Permission Denied'); return false;" @endif>Add
                         new</a>
                 </div>
             </div>
@@ -40,7 +45,7 @@
                                     <button type="button" data-bs-toggle="tooltip" data-bs-placement="left"
                                         title="Edit">
                                         <a class="btn icon btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editYear-{{ $item->id }}"><i class="bi bi-pencil"></i></a>
+                                           @if($adminRole->hasPermissionTo('update-year')) data-bs-target="#editYear-{{ $item->id }}" @else onclick="alert('Permission Denied'); return false;" @endif><i class="bi bi-pencil"></i></a>
                                     </button>
 
                                     {{-- DELETE --}}
@@ -148,7 +153,9 @@
         @endpush
 
     </section>
-    {{-- YEAR --}}
+    @else
+    <div class="alert alert-danger"> {{$error}} </div>
+    @endif
 
 
     @push('script')
@@ -185,6 +192,9 @@
                         var errors = response.errors;
                         if (errors['year']) {
                             $('.year').addClass('is-invalid').next('.yearError').addClass('invalid-feedback').html(errors.year).show();
+                        }
+                        if(!is_array(errors)) {
+                            alert(errors);
                         }
                     }
                 }
@@ -224,6 +234,9 @@
                         var errors = response.errors;
                         if (errors['year']) {
                             $('.year').addClass('is-invalid').next('.yearError').addClass('invalid-feedback').html(errors.year).show();
+                        }
+                        if(!is_array(errors)){
+                            alert(errors);
                         }
                     }
                 }

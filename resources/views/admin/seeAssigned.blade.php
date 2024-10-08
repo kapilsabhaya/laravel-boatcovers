@@ -1,8 +1,13 @@
 <x-admin-layout>
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
     @push('title')
     <title>Manage Assign Model-Year</title>
     @endpush
 
+    @if($assign !=null)
     @push('heading')
     Manage Assign Model-Year
     @endpush
@@ -17,7 +22,7 @@
                     </h5>
                 </div>
                 <div class="ms-auto pe-5">
-                    <a href="{{ route('assignMakeModel.create') }}" class="buttons btn btn-primary">Add new</a>
+                    <a @if($adminRole->hasPermissionTo('create-assign-vehicle-variant')) href="{{ route('assignMakeModel.create') }}" @else onclick="alert('Permission Denied'); return false;"  @endif class="buttons btn btn-primary">Add new</a>
                 </div>
             </div>
 
@@ -55,6 +60,10 @@
 
     </section>
 
+    @else
+    <div class="alert alert-danger"> {{$error}} </div>
+    @endif
+
     @push('script')
     <script>
         $(".deleteAssign").click(function(e) {
@@ -91,6 +100,12 @@
                             text: response.message,
                             icon: "success"
                             });
+                        } else if(response.status === 500) {
+                                Swal2.fire({
+                                    icon: "error",
+                                    title: "Oops...",
+                                    text: response.message,
+                            }); 
                         }
                     }
                 });

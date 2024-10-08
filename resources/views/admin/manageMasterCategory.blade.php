@@ -1,8 +1,14 @@
 <x-admin-layout>
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
+
     @push('title')
     <title>Master Category</title>
     @endpush
 
+    @if($adminRole->hasPermissionTo('view-master-category'))
     @push('heading')
     Master Category
     @endpush
@@ -17,8 +23,8 @@
                     </h5>
                 </div>
                 <div class="ms-auto pe-5">
-                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMaster">Add
-                        new</a>
+                    <a href="#" id="addMasterBtn" class="buttons btn btn-primary" @if($adminRole->hasPermissionTo('create-master-category'))  data-bs-target="#addMaster" @else onclick="alert('Permission Denied'); return false;" @endif  data-bs-toggle="modal">Add
+                     new</a>
                 </div>
             </div>
 
@@ -47,10 +53,10 @@
                                     @endif
                                 </td>
                                 <td style="display:flex;gap :10px">
-                                    <button type="button" data-bs-toggle="tooltip" data-bs-placement="left"
-                                        title="Edit">
+                                    <button class="editMasterBtn" type="button" data-bs-toggle="tooltip" data-bs-placement="left"
+                                        title="Edit" >
                                         <a class="btn icon btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editMaster-{{ $item->id }}"><i
+                                        @if($adminRole->hasPermissionTo('update-master-category')) data-bs-target="#editMaster-{{ $item->id }}" @else onclick="alert('Permission Denied'); return false;" @endif><i
                                                 class="bi bi-pencil"></i></a>
                                     </button>
 
@@ -61,63 +67,63 @@
 
                             {{-- UPDATE MASTER CATEGORY MODAL --}}
                             @push('modal')
-                            <div class="modal fade text-left" id="editMaster-{{ $item->id }}" tabindex="-1"
-                                role="dialog" aria-labelledby="myModalLabel160" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-dialog-l" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-primary">
-                                            <h5 class="modal-title white" id="myModalLabel160">Update Master
-                                                Category
-                                            </h5>
-                                            <button type="button" class="close" data-bs-dismiss="modal"
-                                                aria-label="Close">
-                                                <i data-feather="x"></i>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form id="updateMaster" method="post">
-                                                @method('PATCH')
-                                                @csrf
-                                                <input type="hidden" id="id" value="{{ $item->id }}">
-                                                <label for="">Master Category</label>
-                                                <input type="text" value="{{ $item->master_category_name }}"
-                                                    id="" required class="update_master_name form-control round"
-                                                    name="master_name" autocomplete="off"
-                                                    placeholder="Master Category">
-                                                <p></p>
-                                                <br>
-                                                <label for="">Slug</label>
-                                                <input type="text" value="{{ $item->slug }}"
-                                                    id="" required class="uslug form-control round"
-                                                    name="slug" autocomplete="off"
-                                                    placeholder="Slug">
-                                                <p></p>
-                                                <br>
-                                                <label for="">Status</label>
-                                                <select name="status" id="" class="form-control">
-                                                    <option value="1" @if( $item->status == '1' ) selected
-                                                        @endif>Active
-                                                    </option>
-                                                    <option value="0" @if( $item->status == '0' ) selected
-                                                        @endif>Inactive</option>
-                                                </select>
-                                        </div>
+                                <div class="modal fade text-left" id="editMaster-{{ $item->id }}" tabindex="-1"
+                                    role="dialog" aria-labelledby="myModalLabel160" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-dialog-l" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary">
+                                                <h5 class="modal-title white" id="myModalLabel160">Update Master
+                                                    Category
+                                                </h5>
+                                                <button type="button" class="close" data-bs-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <i data-feather="x"></i>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="updateMaster" method="post">
+                                                    @method('PATCH')
+                                                    @csrf
+                                                    <input type="hidden" id="id" value="{{ $item->id }}">
+                                                    <label for="">Master Category</label>
+                                                    <input type="text" value="{{ $item->master_category_name }}"
+                                                        id="" required class="update_master_name form-control round"
+                                                        name="master_name" autocomplete="off"
+                                                        placeholder="Master Category">
+                                                    <p></p>
+                                                    <br>
+                                                    <label for="">Slug</label>
+                                                    <input type="text" value="{{ $item->slug }}"
+                                                        id="" required class="uslug form-control round"
+                                                        name="slug" autocomplete="off"
+                                                        placeholder="Slug">
+                                                    <p></p>
+                                                    <br>
+                                                    <label for="">Status</label>
+                                                    <select name="status" id="" class="form-control">
+                                                        <option value="1" @if( $item->status == '1' ) selected
+                                                            @endif>Active
+                                                        </option>
+                                                        <option value="0" @if( $item->status == '0' ) selected
+                                                            @endif>Inactive</option>
+                                                    </select>
+                                            </div>
 
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-light-secondary"
-                                                data-bs-dismiss="modal">
-                                                <i class="bx bx-x d-block d-sm-none"></i>
-                                                <span class="d-none d-sm-block">Close</span>
-                                            </button>
-                                            <button type="submit" class="btn btn-primary ms-1">
-                                                <i class="bx bx-check d-block d-sm-none"></i>
-                                                <span class="d-none d-sm-block">Update</span>
-                                            </button>
-                                            </form>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-light-secondary"
+                                                    data-bs-dismiss="modal">
+                                                    <i class="bx bx-x d-block d-sm-none"></i>
+                                                    <span class="d-none d-sm-block">Close</span>
+                                                </button>
+                                                <button type="submit" class="btn btn-primary ms-1">
+                                                    <i class="bx bx-check d-block d-sm-none"></i>
+                                                    <span class="d-none d-sm-block">Update</span>
+                                                </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                             @endpush
                             {{-- END UPDATE MASTER CATEGORY MODAL --}}
 
@@ -174,11 +180,12 @@
         </div>
         {{-- END ADD MASTER CATEGORY MODAL --}}
 
-
         @endpush
 
     </section>
-
+    @else
+    <div class="alert alert-danger"> {{$error}} </div>
+    @endif
     @push('script')
 
     <script>

@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MakeController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\YearController;
 use App\Http\Controllers\AdminController;
@@ -19,6 +20,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrainTreeController;
+use App\Http\Controllers\AssignRoleController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductFaqController;
 use App\Http\Controllers\CategoryFaqController;
 use App\Http\Controllers\OptionValueController;
@@ -26,6 +29,7 @@ use App\Http\Controllers\MakeModelYearController;
 use App\Http\Controllers\DisplayProductController;
 use App\Http\Controllers\MasterCategoryController;
 use App\Http\Controllers\AssignMakeModelController;
+use App\Http\Controllers\AssignPermissionController;
 
 require __DIR__.'/auth.php';
 
@@ -34,6 +38,12 @@ Route::middleware(['auth:admin','verified'])->group(function()
     Route::prefix('admin')->group(function() 
     { 
         Route::get('dashboard',[AdminController::class,'index'])->name('admin_dashboard');
+        Route::resource('roles',RoleController::class);
+        Route::resource('assignRole',AssignRoleController::class);
+        Route::resource('permission',PermissionController::class);
+        Route::resource('assignPermission',AssignPermissionController::class);
+        Route::get('permissionToAdmin',[AssignPermissionController::class,'permissionToAdmin'])->name('permissionToAdmin');
+        Route::post('permissionToAdminStore',[AssignPermissionController::class,'permissionToAdminStore'])->name('permissionToAdminStore');
         Route::resource('masterCategory',MasterCategoryController::class);
         Route::resource('category',CategoryController::class);  
         Route::resource('user',UserController::class);
@@ -44,6 +54,7 @@ Route::middleware(['auth:admin','verified'])->group(function()
         Route::resource('option',OptionController::class);
         Route::resource('optionValue',OptionValueController::class);
         Route::resource('product',ProductController::class);
+        Route::post('/deleteImg',[ProductController::class,'deleteImg'])->name('deleteImg');
         Route::resource('setting',SettingController::class);
         Route::resource('categoryFaq',CategoryFaqController::class);
         Route::resource('productFaq',ProductFaqController::class);

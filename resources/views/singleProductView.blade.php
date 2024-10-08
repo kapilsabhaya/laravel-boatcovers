@@ -156,7 +156,7 @@
                 </div>
             </div>
         @else
-            @include('customizeProductView');
+            @include('customizeProductView')
         @endif
 
         @push('script')

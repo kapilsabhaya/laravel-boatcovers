@@ -1,11 +1,15 @@
-{{-- Option Value
-{{ $data }} --}}
-
 <x-admin-layout>
+
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
+
     @push('title')
     <title>Manage Option Value </title>
     @endpush
 
+    @if($adminRole->hasPermissionTo('view-option-value'))
     @push('heading')
     Manage Option Value
     @endpush
@@ -19,7 +23,7 @@
                     </h5>
                 </div>
                 <div class="ms-auto pe-5">
-                    <a class="buttons btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOptionValue">Add
+                    <a class="buttons btn btn-primary" data-bs-toggle="modal" @if($adminRole->hasPermissionTo('create-option-value')) data-bs-target="#addOptionValue" @else onclick="alert('Permission Denied'); return false;" @endif>Add
                         new</a>
                     <a href="{{ route('option.index') }}" class="buttons btn btn-secondary">Back</a>
                 </div>
@@ -52,7 +56,7 @@
                                     <button type="button" data-bs-toggle="tooltip" data-bs-placement="left"
                                         title="Edit">
                                         <a class="btn icon btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editOptionValue-{{ $item->id }}"><i
+                                           @if($adminRole->hasPermissionTo('update-option-value')) data-bs-target="#editOptionValue-{{ $item->id }}" @else onclick="alert('Permission Denied'); return false;" @endif><i
                                                 class="bi bi-pencil"></i></a>
                                     </button>
 
@@ -185,7 +189,9 @@
         @endpush
 
     </section>
-
+    @else
+    <div class="alert alert-danger"> {{ "Permission Denied !" }} </div>
+    @endif
     @push('script')
 
     <script>
@@ -225,6 +231,9 @@
                         
                         if (errors['sort_order']) {
                             $('.sort_order').addClass('is-invalid').next('#sortOrderError').addClass('invalid-feedback').html(errors.sort_order).show();
+                        }
+                        if(!is_array(errors)) {
+                            alert(errors);
                         }
                     }
                 }
@@ -267,6 +276,9 @@
                         }
                         if (errors['sort_order']) {
                             $('.usort').addClass('is-invalid').next('#sort_order_error').addClass('invalid-feedback').html(errors.sort_order).show();
+                        }
+                        if(!is_array(errors)) {
+                            alert(errors);
                         }
                     }
                 }

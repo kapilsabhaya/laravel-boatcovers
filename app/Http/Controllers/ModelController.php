@@ -6,6 +6,8 @@ use App\Models\Make;
 use App\Models\VModel;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ModelController extends Controller
@@ -15,11 +17,17 @@ class ModelController extends Controller
      */
     public function index()
     {
-        $category = Category::all();
-        $make = Make::all();
-        $model = VModel::with(['category','make'])->get();
-        // dd($category);
-        return view('admin.manageModel',['category' => $category , 'make' => $make ,'model' => $model]);
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        $error = $category = $make = $model = null;
+        if($role->hasPermissionTo('view-model')) {
+            $category = Category::all();
+            $make = Make::all();
+            $model = VModel::with(['category','make'])->get();
+        } else {
+            $error = "Permission Denied";
+        }
+        return view('admin.manageModel',['category' => $category , 'make' => $make ,'model' => $model,'error' => $error]);
     }
 
     /** 
@@ -35,17 +43,23 @@ class ModelController extends Controller
      */
     public function store(Request $request)
     {
-        $validation = Validator ::make($request->all(), [
-            'model' => 'required',
-            'slug' => 'required|unique:model,slug',
-        ]);
-        if($validation->passes()) {
-            $insert = VModel::create(['model_name' => $request->model , 'category_id' => $request->category , 'make_id' => $request->make , 'slug' => $request->slug]);
-            if($insert) {
-                return response()->json(['status' => 200 , 'message' => 'Model Added Successfully']);
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        if($role->hasPermissionTo('create-model')) {
+            $validation = Validator ::make($request->all(), [
+                'model' => 'required',
+                'slug' => 'required|unique:model,slug',
+            ]);
+            if($validation->passes()) {
+                $insert = VModel::create(['model_name' => $request->model , 'category_id' => $request->category , 'make_id' => $request->make , 'slug' => $request->slug]);
+                if($insert) {
+                    return response()->json(['status' => 200 , 'message' => 'Model Added Successfully']);
+                }
+            } else {
+                return response()->json(['status' => 500 , 'errors' => $validation->errors()]);
             }
         } else {
-            return response()->json(['status' => 500 , 'errors' => $validation->errors()]);
+            return response()->json(['status' => 500 , 'errors' => "Permission Denied"]);
         }
     }
 
@@ -70,17 +84,23 @@ class ModelController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $validation = Validator ::make($request->all(), [
-            'model' => 'required',
-            'slug' => 'required|unique:model,slug,'.$id,
-        ]);
-        if($validation->passes()) {
-            $update = VModel::where('id',$id)->update(['model_name' => $request->model , 'category_id' => $request->category , 'make_id' => $request->make , 'slug' => $request->slug]);
-            if($update) {
-                return response()->json(['status' => 200 , 'message' => 'Model Updated Successfully']);
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        if($role->hasPermissionTo('update-model')) {
+            $validation = Validator ::make($request->all(), [
+                'model' => 'required',
+                'slug' => 'required|unique:model,slug,'.$id,
+            ]);
+            if($validation->passes()) {
+                $update = VModel::where('id',$id)->update(['model_name' => $request->model , 'category_id' => $request->category , 'make_id' => $request->make , 'slug' => $request->slug]);
+                if($update) {
+                    return response()->json(['status' => 200 , 'message' => 'Model Updated Successfully']);
+                }
+            } else {
+                return response()->json(['status' => 500 , 'errors' => $validation->errors()]);
             }
         } else {
-            return response()->json(['status' => 500 , 'errors' => $validation->errors()]);
+            return response()->json(['status' => 500 , 'errors' => "Permission Denied"]);
         }
     }
 
@@ -89,11 +109,17 @@ class ModelController extends Controller
      */
     public function destroy(string $id)
     {
-        $delete = VModel::where('id', $id)->delete();
-        if($delete) {
-            return response()->json(['status' => 200, 'message' => 'Model Deleted Successfully']);
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        if($role->hasPermissionTo('delete-model')) {
+            $delete = VModel::where('id', $id)->delete();
+            if($delete) {
+                return response()->json(['status' => 200, 'message' => 'Model Deleted Successfully']);
+            } else {
+                return response()->json(['status' => 500 , 'message' => "Failed To delete"]);
+            }
         } else {
-            return response()->json(['status' => 500 , 'message' => "Failed To delete"]);
+            return response()->json(['status' => 500 , 'message' => "Permission Denied"]);
         }
     }
 }

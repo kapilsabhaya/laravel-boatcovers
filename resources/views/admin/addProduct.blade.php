@@ -214,7 +214,7 @@
     @push('script')
     {{-- <script src="{{ asset('assets/extensions/quill/quill.min.js') }} "></script> --}}
     <script src="{{ asset('assets/extensions/quill/quill.js') }}" defer></script>
-    {{-- <script src="{{ asset('assets/static/js/pages/quill.js') }} "></script> --}}
+    <script src="{{ asset('assets/static/js/pages/quill.js') }} "></script>
     <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
     <script
         src="{{ asset('assets/extensions/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js') }}">

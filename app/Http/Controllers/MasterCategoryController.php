@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\MasterCategory;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
 use App\Services\MasterCategoryService;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,8 +18,15 @@ class MasterCategoryController extends Controller
     public function __construct( protected MasterCategoryService $masterCategory ) { }
     public function index()
     {
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        $getMasterCategory = $error =null;
+        if($role->hasPermissionTo('view-master-category')) {
         $getMasterCategory = MasterCategory :: all();
-        return view('admin.manageMasterCategory',['data' => $getMasterCategory]);
+        } else {
+        $error = "You don't have permission to access this page!";
+        }
+        return view('admin.manageMasterCategory',['data' => $getMasterCategory,'error' => $error]);
     }
 
     /**
@@ -34,7 +43,7 @@ class MasterCategoryController extends Controller
     public function store(Request $request)
     {
         $data = $this->masterCategory->store($request->all());
-        if(isset($data['status']) === 200) {
+        if(isset($data['status']) && $data['status'] == 200) {
             return response()->json(['status' => 200, 'message' => 'Master Category Added Successfully']);
         } else {
             return response()->json(['status' => 500 , 'errors' => $data['errors']]);
@@ -62,8 +71,8 @@ class MasterCategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $data = $this->masterCategory->update($data,$id);
-        if(isset($data['status']) === 200) {
+        $data = $this->masterCategory->update($request->all(),$id);
+        if(isset($data['status']) && $data['status'] == 200) {
             return response()->json(['status' => 200, 'message' => 'Master Category Updated Successfully']);
         } else {
             return response()->json(['status' => 500 , 'errors' => $data['errors']]);
@@ -76,9 +85,13 @@ class MasterCategoryController extends Controller
     public function destroy(string $id)
     {
         $data = $this->masterCategory->destroy($id);
-        if(isset($data['status']) == 500 ) {
+        if(isset($data['status']) && $data['status'] == 500 ) {
             return response()->json(['status' => 500 , 'message' => 'Master Category Associated']);
-        } else {
+        }
+        if(isset($data['error']) && $data['error'] == 500) {
+            return response()->json(['status' => 500 , 'message' => 'Permission Denied']);
+        }
+        else {
             return response()->json(['status' => 200, 'message' => 'Master Category Deleted']);
         }
     }

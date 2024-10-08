@@ -530,16 +530,16 @@
                             <li>Land vehicles</li>
                         </h6>
                         <ul>
-                            <a href="">
+                            <a href="{{route('handleSlug','car-covers')}}">
                                 <li>CARs</li>
                             </a>
-                            <a href="">
+                            <a href="{{route('handleSlug','suv-covers')}}">
                                 <li>SUVs</li>
                             </a>
-                            <a href="">
+                            <a href="{{route('handleSlug','truck-covers')}}">
                                 <li>Trucks</li>
                             </a>
-                            <a href="">
+                            <a href="{{route('handleSlug','van-covers')}}">
                                 <li>Vans</li>
                             </a>
                         </ul>
@@ -561,7 +561,7 @@
                             <a href="">
                                 <li>ATVs</li>
                             </a>
-                            <a href="">
+                            <a href="{{route('handleSlug','motorcycle-covers')}}">
                                 <li>Motorcycles</li>
                             </a>
                             <a href="">
@@ -586,7 +586,7 @@
                             <a href="">
                                 <li>Boats</li>
                             </a>
-                            <a href="">
+                            <a href="{{route('handleSlug','jet-ski-covers')}}">
                                 <li>Jet skis</li>
                             </a>
                             <a href="">

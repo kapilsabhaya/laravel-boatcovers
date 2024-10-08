@@ -1,12 +1,16 @@
 <x-admin-layout>
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
     @push('title')
     <title>Manage Make</title>
     @endpush
 
+    @if($adminRole->hasPermissionTo('view-make'))
     @push('heading')
     Manage Make
     @endpush
-    {{-- MAKE --}}
     <section class="section">
         <div class="card">
 
@@ -17,7 +21,7 @@
                     </h5>
                 </div>
                 <div class="ms-auto pe-5">
-                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMake">Add
+                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" @if($adminRole->hasPermissionTo('create-make')) data-bs-target="#addMake" @else onclick="alert('Permission Denied'); return false;" @endif>Add
                         new</a>
                 </div>
 
@@ -44,8 +48,7 @@
                                     {{-- Update --}}
                                     <button type="button" data-bs-toggle="tooltip" data-bs-placement="left"
                                         title="Edit">
-                                        <a class="btn icon btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editMake-{{ $item->id }}"><i class="bi bi-pencil"></i></a>
+                                        <a class="btn icon btn-primary" @if($adminRole->hasPermissionTo('update-make')) data-bs-target="#editMake-{{ $item->id }}" @else onclick="alert('Permission Denied'); return false;" @endif data-bs-toggle="modal"><i class="bi bi-pencil"></i></a>
                                     </button>
 
                                     {{-- DELETE --}}
@@ -105,9 +108,9 @@
                                     </div>
                                 </div>
                             </div>
-                </div>
-                {{-- END UPDATE MAKE MODAL --}}
-                @endpush
+                            </div>
+                            {{-- END UPDATE MAKE MODAL --}}
+                            @endpush
                 @endforeach
 
                 </tbody>
@@ -167,7 +170,9 @@
         @endpush
 
     </section>
-    {{-- MAKE --}}
+    @else
+    <div class="alert alert-danger"> {{$error}} </div>
+    @endif
     @push('script')
 
     <script>
@@ -238,6 +243,9 @@
                         if (errors['slug']) {
                             $('.aslug').addClass('is-invalid').next('#slugError').addClass('invalid-feedback').html(errors.slug).show();
                         }
+                        if(!is_array(errors)) {
+                            alert(errors);
+                        }
                     }
                 }
             });
@@ -279,6 +287,9 @@
                         }
                         if (errors['slug']) {
                             $('.uslug').addClass('is-invalid').next('#slug_error').addClass('invalid-feedback').html(errors.slug).show();
+                        }
+                        if(!is_array(errors)) {
+                            alert(errors);
                         }
                     }
                 }

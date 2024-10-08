@@ -1,6 +1,6 @@
 <x-admin-layout>
     @push('heading')
-    Assign Vehicle Variant
+    Assign Permissions
     @endpush
 
     <section class="section">
@@ -17,32 +17,33 @@
             <div class="card-body">
                 <form id="assignForm" method="post" class="form">
                     @csrf
-                    <label for="">Select Years</label><br>
-                    <select data-placeholder="Select Years" multiple id="year" class="chosen-select" name="year[]"
+                    <label for="">Select Roles</label><br>
+                    <select data-placeholder="Select Roles" multiple id="role" class="chosen-select" name="role[]"
                         style="width: 70%;min-height:200vh">
-                        @if ($year->isNotEmpty())
-                        @foreach ($year as $item)
-                        <option value="{{ $item->id }}">{{ $item->year }}</option>
+                        @if ($roles->isNotEmpty())
+                        @foreach ($roles as $item)
+                        <option value="{{ $item->id }}">{{ $item->name }}</option>
                         @endforeach
                         @else
-                        <option selected disabled>No Years Found</option>
+                        <option selected disabled>No Roles Found</option>
                         @endif
                     </select>
-                    <p class="yearError"></p>
+                    <p class="roleError"></p>
                     <br><br>
 
-                    <label for="">Select Models</label><br>
-                    <select data-placeholder="Select Models" id="model" multiple class="chosen-select" name="model[]"
+                    <label for="">Select Permissions</label><br>
+                    <select data-placeholder="Select Permissions" id="permission" multiple class="chosen-select" name="permission[]"
                         style="width: 70%;min-height:200vh">
-                        @if ($model->isNotEmpty())
-                        @foreach ($model as $mdl)
-                        <option value="{{ $mdl->id }}">{{ $mdl->model_name }}</option>
+                        @if ($permissions->isNotEmpty())
+                        @foreach ($permissions as $permission)
+                        <option value="{{ $permission->id }}">{{ $permission->name }}</option>
                         @endforeach
                         @else
-                        <option selected disabled>No Model Found</option>
+                        <option selected disabled>No Permission Found</option>
                         @endif
                     </select>
-                    <p class="modelError"></p>
+                    <p class="permissionError"></p>
+
                     <div class="col-12 d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary me-1 mb-1">Assign</button>
                     </div>
@@ -72,7 +73,7 @@
             });
             $.ajax({
                 type: "post",
-                url: "{{ route('assignMakeModel.store') }}",
+                url: "{{ route('assignPermission.store') }}",
                 data: new FormData(this),
                 dataType: "json",
                 cache: false,
@@ -93,13 +94,12 @@
                         , });
                     } else if (response.errors) {
                         var errors = response.errors;
-                        if (errors['year']) {
-                            $('#year_chosen').addClass('is-invalid').next('.yearError').addClass('invalid-feedback').html(errors.year).show();
+                        if (errors['role']) {
+                            $('#role_chosen').addClass('is-invalid').next('.roleError').addClass('invalid-feedback').html(errors.role).show();
                         }
-                        if (errors['model']) {
-                            $('#model_chosen').addClass('is-invalid').next('.modelError').addClass('invalid-feedback').html(errors.model).show();
-                        }
-                        if(is_array(errors)) {
+                        if (errors['permission']) {
+                            $('#permission_chosen').addClass('is-invalid').next('.permissionError').addClass('invalid-feedback').html(errors.permission).show();
+                        } if(!is_array(errors)) {
                             alert(errors);
                         }
                     }   

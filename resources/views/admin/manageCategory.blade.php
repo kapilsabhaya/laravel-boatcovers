@@ -1,4 +1,8 @@
 <x-admin-layout>
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
     @push('title')
     <title>Category</title>
     @endpush
@@ -7,7 +11,7 @@
         href="{{ asset('assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/extensions/filepond/filepond.css') }}">
 
-
+    @if($adminRole->hasPermissionTo('view-category'))
     @push('heading')
     Category
     @endpush
@@ -22,7 +26,7 @@
                     </h5>
                 </div>
                 <div class="ms-auto pe-5">
-                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategory">Add
+                    <a href="#" class="buttons btn btn-primary" data-bs-toggle="modal" @if($adminRole->hasPermissionTo('create-category')) data-bs-target="#addCategory" @else onclick="alert('Permission Denied'); return false;" @endif>Add
                         new</a>
                 </div>
             </div>
@@ -63,10 +67,9 @@
                                 @endif
                                 <td style="display:flex;gap:7px;">
 
-                                    <button type="button" data-bs-toggle="tooltip" data-bs-placement="left"
+                                    <button class="editCatBtn" type="button" data-bs-toggle="tooltip" data-bs-placement="left"
                                         title="Edit">
-                                        <a class="btn icon btn-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editCategory-{{ $category->id }}"><i
+                                        <a class="btn icon btn-primary" data-bs-toggle="modal"  @if($adminRole->hasPermissionTo('update-category')) data-bs-target="#editCategory-{{ $category->id }}"  @else onclick="alert('Permission Denied'); return false;" @endif><i
                                                 class="bi bi-pencil"></i></a>
                                     </button>
 
@@ -152,7 +155,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @endpush
+                            @endpush 
                             {{-- END OF UPDATE MODAL --}}
                             @endforeach
                         </tbody>
@@ -237,7 +240,9 @@
         @endpush
 
     </section>
-
+    @else
+    <div class="alert alert-danger"> {{$error}} </div>
+    @endif
     @push('script')
 
     <script>
@@ -313,6 +318,9 @@
                             }
                             if(errors['slug']) {
                             $('.add_slug').addClass('is-invalid').next('#add_slug_error').addClass('invalid-feedback').html(errors.slug).show();
+                            }  
+                            if(!is_array(errors)) {
+                                alert(errors);
                             }
                             
                         } 
@@ -399,6 +407,9 @@
                             }
                             if(errors['slug']) {
                             $('.edit_slug').addClass('is-invalid').next('#slug_error').addClass('invalid-feedback').html(errors.slug).show();
+                            }
+                            if(!is_array(errors)) {
+                                alert(errors);
                             }
                         }
                 }

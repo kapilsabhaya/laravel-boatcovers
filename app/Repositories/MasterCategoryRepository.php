@@ -4,6 +4,8 @@ namespace App\Repositories;
 
 use App\Models\Category;
 use App\Models\MasterCategory;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -17,7 +19,7 @@ class MasterCategoryRepository
         if($validation->passes()) {
             $addMaster = MasterCategory :: create(['master_category_name' => $data['master_name']]);
             if($addMaster) {
-                return ['status' == 200];
+                return ['status' => 200];
             }
         } else {
             return ['errors' => $validation->errors()];
@@ -27,12 +29,12 @@ class MasterCategoryRepository
     public function update(array $data, $id){
         $validation = Validator::make($data,[
             'master_name' => 'required',
-            'slug' => 'required|unique:master_category,slug'
+            'slug' => 'required|unique:master_category,slug,'.$id
         ]);
         if($validation->passes()) { 
-            $update = MasterCategory ::where('id',$id)->update(['master_category_name' => $data['master_name'] , 'status' => $request['status']]);
+            $update = MasterCategory ::where('id',$id)->update(['master_category_name' => $data['master_name'] , 'status' => $data['status']]);
             if($update) {
-                return ['status' == 200];
+                return ['status' => 200];
             }
         } else {
             return ['errors' => $validation->errors()];
@@ -40,13 +42,19 @@ class MasterCategoryRepository
     }
 
     public function destroy($id){
-        $findCategory = Category::where('master_category_id',$id)->first();
-        if($findCategory) {
-            return ['status' => 500];
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        if($role->hasPermissionTo('delete-master-category')) {
+            $findCategory = Category::where('master_category_id',$id)->first();
+            if($findCategory) {
+                return ['status' => 500];
+            }
+            $delete = MasterCategory ::where('id',$id)->delete();
+            if($delete) {
+                return ['status' => 200];
+            } 
+        } else {
+            return ['error' => 500];
         }
-        $delete = MasterCategory ::where('id',$id)->delete();
-        if($delete) {
-            return ['status' => 200];
-        } 
     }
 }

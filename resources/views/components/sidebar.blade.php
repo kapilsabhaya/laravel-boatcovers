@@ -65,10 +65,34 @@
                         </a>
                     </li>
 
-                    <li class="sidebar-item  ">
-                        <a href="application-email.html" class='sidebar-link'>
-                            <i class="bi bi-person-fill-add"></i>
+                    <li class="sidebar-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                        <a href="{{ route('roles.index') }}" class='sidebar-link'>
+                            <i class="bi bi-r-square-fill"></i>
                             <span>Roles</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('permission.*') ? 'active' : '' }}">
+                        <a href="{{ route('permission.index') }}" class='sidebar-link'>
+                            <i class="bi bi-p-square-fill"></i>
+                            <span>Permission</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('assignRole.*') ? 'active' : '' }}">
+                        <a href="{{ route('assignRole.index') }}" class='sidebar-link'>
+                            <i class="bi bi-person-fill-add"></i>
+                    <span>Role To Admin</span>
+                        </a>
+                    </li>
+                    {{-- <li class="sidebar-item {{ request()->routeIs('permissionToAdmin') ? 'active' : '' }}">
+                        <a href="{{ route('permissionToAdmin') }}" class='sidebar-link'>
+                            <i class="bi bi-cloud-haze2-fill"></i>
+                            <span>Permission To Admin</span>
+                        </a>
+                    </li> --}}
+                    <li class="sidebar-item {{ request()->routeIs('assignPermission.*') ? 'active' : '' }}">
+                        <a href="{{ route('assignPermission.index') }}" class='sidebar-link'>
+                            <i class="bi bi-eye-fill"></i>
+                    <span>Permission To Role</span>
                         </a>
                     </li>
 

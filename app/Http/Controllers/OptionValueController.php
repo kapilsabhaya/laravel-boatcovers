@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\OptionValue;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use App\Services\OptionValueService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class OptionValueController extends Controller
@@ -33,8 +35,10 @@ class OptionValueController extends Controller
     public function store(Request $request)
     {
         $data = $this->optionValue->store($request->all());
-        if($data['errors']) {
+        if(isset($data['errors'])) {
             return response()->json(['status' => 500 , 'errors' => $data['errors']]);
+        } else if(isset($data['status']) && $data['status'] == 500) {
+            return response()->json(['status' => 50,'errors' => "Permission Denied!"]);
         } else {
             return response()->json(['status' => 200, 'message' => 'Option Value Added Successfully']);
         }
@@ -62,8 +66,10 @@ class OptionValueController extends Controller
     public function update(Request $request, string $id)
     {
         $data = $this->optionValue->update($request->all(),$id);
-        if($data['errors']) {
+        if(isset($data['errors'])) {
             return response()->json(['status' => 500 , 'errors' => $data['errors']]);
+        } else if(isset($data['status']) && $data['status'] == 500) {
+            return response()->json(['status' => 500, 'errors' => "Permission Denied"]);
         } else {
             return response()->json(['status' => 200, 'message' => 'Option Value Updated Successfully']);
         }
@@ -74,11 +80,17 @@ class OptionValueController extends Controller
      */
     public function destroy(string $id)
     {
-        $data = $this->optionValue->destroy($id);
-        if($data['status'] === 200){
-            return response()->json(['status' => 200 , 'message' => 'Option Deleted Successfully']);
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        if($role->hasPermissionTo('delete-option-value')) {
+            $data = $this->optionValue->destroy($id);
+            if($data['status'] === 200){
+                return response()->json(['status' => 200 , 'message' => 'Option Deleted Successfully']);
+            } else {
+                return response()->json(['status' => 500 , 'message' => "something went wrong"]);
+            }
         } else {
-            return response()->json(['status' => 500 , 'message' => "something went wrong"]);
+            return response()->json(['status' => 500 , 'message' => "Permission Denied"]);
         }
     } 
 }

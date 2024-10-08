@@ -6,6 +6,8 @@ use App\Models\Option;
 use App\Models\OptionValue;
 use Illuminate\Http\Request;
 use App\Services\OptionService;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class OptionController extends Controller
@@ -17,8 +19,15 @@ class OptionController extends Controller
 
     public function index()
     {
-        $option = Option::all();
-        return view('admin.manageOption',['option' => $option]);
+        $admin = Auth::guard('admin')->user();
+        $role = Role::find($admin->id);
+        $option = $error = null;
+        if($role->hasPermissionTo('view-option')) {
+            $option = Option::all();
+        } else {
+            $error = "Permission Denied!";
+        }
+        return view('admin.manageOption',['option' => $option,'error' => $error]);
     }
 
     /**
@@ -35,7 +44,9 @@ class OptionController extends Controller
     public function store(Request $request)
     {
         $data = $this->option->store($request->all());
-        if(isset($data['errors'])){
+        if(isset($data['status']) && $data['status'] == 500) {
+            return response()->json(['status' => 500 , 'errors' => 'Permission Denied']);
+        } else if(isset($data['errors'])){
             return response()->json(['status' => 500 , 'errors' => $data['errors']]);
         } else {
             return response()->json(['status' =>200 , 'message' => 'Option Added Successfully']);
@@ -66,7 +77,9 @@ class OptionController extends Controller
     public function update(Request $request, string $id)
     {
         $data = $this->option->update($request->all(),$id);
-        if(isset($data['errors'])){
+        if(isset($data['status']) && $data['status'] == 500){
+            return response()->json(['status' => 500 , 'errors' => "Permission Denied"]);
+        } else if(isset($data['errors'])){
             return response()->json(['status' => 500 , 'errors' => $data['errors']]);
         } else {
             return response()->json(['status' =>200 , 'message' => 'Option Updated Successfully']);
@@ -81,8 +94,10 @@ class OptionController extends Controller
         $data = $this->option->destroy($id);
         if($data['status'] === 200){
             return response()->json(['status' => 200 , 'message' => 'Option Deleted Successfully']);
+        } else if(($data['status'] === 500)) {
+            return response()->json(['status' => 500 , 'message' => "Permission Denied"]);
         } else {
-            return response()->json(['status' => 500 , 'message' => "something went wrong"]);
+            return response()->json(['status' => 500 , 'message' => "Something Went Wrong"]);
         }
     }
 }

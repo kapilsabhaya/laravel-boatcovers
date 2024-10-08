@@ -1,10 +1,16 @@
 <x-admin-layout>
+    @php
+    $admin = Auth::guard('admin')->user();
+    $adminRole = Spatie\Permission\Models\Role::find($admin->id);
+    @endphp
     @push('title')
     <title>Manage Product </title>
     @endpush
     <link rel="stylesheet" href="{{ asset('assets/extensions/quill/quill.snow.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/extensions/quill/quill.bubble.css') }}">
 
+    @if ($adminRole->hasPermissionTo('view-product'))
+    
     @push('heading')
     Manage Product
     @endpush
@@ -64,9 +70,9 @@
                                 <td> {{ $item->sort_order }} </td>
                                 <td style="display:flex;gap:10px">
 
-                                    <button type="button" data-bs-toggle="tooltip" data-bs-placement="left"
+                                    <button class="editProductBtn" type="button" data-bs-toggle="tooltip" data-bs-placement="left"
                                         title="Edit">
-                                        <a href="{{ route('product.edit',$item->id) }}" class="btn icon btn-primary"><i
+                                        <a @if($adminRole->hasPermissionTo('update-product')) href="{{ route('product.edit',$item->id) }}" @else onclick="alert('Permission Denied'); return false;" @endif  class="btn icon btn-primary"><i
                                                 class="bi bi-pencil"></i></a>
                                     </button>
 
@@ -85,6 +91,9 @@
 
     </section>
 
+    @else
+        <div class="alert alert-danger">{{ $error }}</div>
+    @endif
     <script>
         $(".deleteProduct").click(function(e) {
             e.preventDefault();

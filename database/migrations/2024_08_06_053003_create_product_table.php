@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name',100);
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('category')->onDelete('cascade')->onUpdate('cascade');
-            $table->string('description',500);
+            $table->text('description');
             $table->decimal('price');
             $table->unsignedInteger('quantity');
             $table->string('warranty',10);

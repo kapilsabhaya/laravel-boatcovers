@@ -35,6 +35,9 @@ class DisplayProductRepository
         $model = VModel::where('model_name',$model)->first();
         $year = Year::where('year',$year)->first();
         
+        if(!$make || !$model || !$year) {
+            return ['vehicleError' => 500];
+        }
         $category = VModel::where('make_id',$make->id)->where('id',$model->id)->first();
         if($category) {
             $products = Product::with(['getCategory','media' => function($query){ $query->orderBy('sort_order')->limit(1); },'productOption.optionValue' => function($que) { $que->orderBy('option_value.sort_order'); }])->where('category_id',$category->category_id)->where('product.quantity' ,'>', 1)->where('product.is_active',true)->orderBy('sort_order')->get();

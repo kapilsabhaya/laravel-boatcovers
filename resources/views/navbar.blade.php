@@ -81,6 +81,17 @@ $master = App\Models\MasterCategory::where('status',true)->get();
                     </div>
                 </div>
                 <div class="myOrders"><a href="{{route('myOrder')}}"><i class="bi bi-basket-fill" title="My Orders"></i></a></div>
+                @if(Auth::user())
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+
+                    <x-dropdown-link :href="route('logout')"
+                            onclick="event.preventDefault();
+                                        this.closest('form').submit();">
+                        {{ __('Log Out') }}
+                    </x-dropdown-link>
+                </form>
+                @endif
             </div>
 
         </div>

@@ -53,8 +53,6 @@ class BrainTreeController extends Controller
                 ]);
             if(!$request->hasCookie('guest_id')) {
                 Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
-            } else {
-                Cookie::queue('guest_id', $addGuest->id, 60 * 24 * 30); //30 days
             }
             } else {
                 $addGuest = $guestUser;
